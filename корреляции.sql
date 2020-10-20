@@ -91,41 +91,18 @@ $$
 LANGUAGE plpgsql;
 /*---------------- Data sampling procedure ----------------*/
 
-/*---------------- Pearson correlation procedure ----------------*/
-DROP FUNCTION IF EXISTS pearson_correlation(TEXT, TEXT, TEXT);
-CREATE FUNCTION pearson_correlation(tname TEXT, field1 TEXT, field2 TEXT)
-RETURNS REAL
-AS $$
-DECLARE
-	avg1 REAL := 0;
-	avg2 REAL := 0;
-	num integer := 0;
-	deviation1 REAL := 0;
-	deviation2 REAL := 0;
-	correlation REAL :=0;
-BEGIN
-		EXECUTE format('SELECT count(%s) FROM %s;', field1, tname) INTO num;
-		EXECUTE format('SELECT avg(%s) FROM %s;', field1, tname) INTO avg1;
-		EXECUTE format('SELECT avg(%s) FROM %s;', field2, tname) INTO avg2;
-		EXECUTE format('SELECT |/sum((%s - %s)^2.0)/%s FROM %s;', field1, avg1, num, tname) INTO deviation1;
-		EXECUTE format('SELECT |/sum((%s - %s)^2.0)/%s FROM %s;', field2, avg2, num, tname) INTO deviation2;
-		EXECUTE format('SELECT sum((%s - %s)*(%s - %s))/(%s*%s*%s) FROM %s;', field1, avg1, field2, avg2, num, deviation1, deviation2, tname) INTO correlation;
+/*---------------- FUNCTION Pearson correlation procedure ----------------*/
 
-		RETURN correlation;
-END ;
-$$
-LANGUAGE plpgsql;
+
+include('f_pearson_correlation.sql') /*including all the insert code*/
+
+
 /*---------------- Pearson correlationg procedure ----------------*/
 
-/*---------------- Correlation threshold ----------------*/
-DROP FUNCTION IF EXISTS correlation_threshold(REAL, REAL);
-CREATE FUNCTION correlation_threshold(correlation REAL, threshold REAL)
-RETURNS BOOLEAN
-AS $$
-BEGIN
-		RETURN abs(correlation)>=threshold;
-END ;
-$$
-LANGUAGE plpgsql;
+
+/*----------------FUNCTION Correlation threshold ----------------*/
+
+include('f_correlation_threhold.sql') /*including all the insert code*/
+
 /*---------------- Correlation correlationg procedure ----------------*/
 
