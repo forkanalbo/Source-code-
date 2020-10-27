@@ -57,19 +57,6 @@ BEGIN
 		EXECUTE data_query;
 END ;
 $$
-
-[
-	{
-		"agr": 1,
-		"sensors": [1,2,3]
-	},
-	{
-		"agr": 2,
-		"sensors": [2,3]
-	},
-]
-
-
 LANGUAGE plpgsql;
 /*---------------- Generate sensors data procedure ----------------*/
 
@@ -92,9 +79,7 @@ DECLARE
 	counter INTEGER := 0;
 	first_agr TEXT;
 BEGIN
-	SELECT json_array_length(agrs) INTO agrs_count;
-	RAISE NOTICE 'Number of agregates %', agrs_count;
-	
+	SELECT json_array_length(agrs) INTO agrs_count;	
 	FOR agr_json IN SELECT * FROM json_array_elements(agrs)
 	LOOP
 		IF counter = 0
@@ -130,22 +115,45 @@ BEGIN
 	import_query := format('INSERT INTO %s(%s);', res_table, data_query);
 	
 	EXECUTE import_query;
-	
-	
-	RAISE NOTICE 'Res table: %', res_table ;
-	RAISE NOTICE 'Res Snsors: %', res_sensors ;
-	RAISE NOTICE 'Import_query: %', import_query ;
 END ;
 $$
 LANGUAGE plpgsql;
 
-call join_sensors('[
-	{
-		"agr": 1,
-		"sensors": [1,2,3]
-	},
-	{
-		"agr": 2,
-		"sensors": [2,3]
-	}
-]');
+
+/*---------------- Data sampling procedure ----------------*/
+DROP PROCEDURE IF EXISTS sensors_data_sampling(TEXT, TEXT[]);
+CREATE PROCEDURE sensors_data_sampling(tname TEXT, fields TEXT[])
+AS $$
+DECLARE
+	field TEXT;
+	num integer := 0;
+	N integer := 1;
+	Width real := 0;
+	
+BEGIN
+		FOREACH field IN ARRAY fields
+		LOOP
+			EXECUTE format('SELECT count(%s) FROM %s;', field, tname) INTO num;
+			
+			N := 1 + floor(log(2, num));
+			
+			EXECUTE format('SELECT (max(%s) - min(%s))/%s FROM %s;', field, field, N, tname) INTO Width; 
+			
+			EXECUTE format('update %s set %s = floor(%s / %s) + 1;', tname, field, field, Width);
+			
+			
+		END LOOP;
+END ;
+$$
+LANGUAGE plpgsql;
+/*---------------- Data sampling procedure ----------------*/
+
+/*---------------- Pearson correlation procedure ----------------*/
+include('correlationsensors.sql') /*including all the insert code*/
+/*---------------- Pearson correlationg procedure ----------------*/
+
+/*---------------- Correlation threshold ----------------*/
+include('pearson_correlation.sql') /*including all the insert code*/
+
+/*---------------- Correlation correlationg procedure ----------------*/
+
