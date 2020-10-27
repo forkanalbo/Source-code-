@@ -1,3 +1,8 @@
+
+
+
+/* (c) 2020 furqan albo jwaid  */
+
 CREATE TABLE T (
 	id serial PRIMARY KEY,
 	val real  NOT NULL

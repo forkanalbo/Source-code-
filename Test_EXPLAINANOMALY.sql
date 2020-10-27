@@ -1,41 +1,65 @@
+
+
+
+/* (c) 2020 furqan albo jwaid  */
+DROP TABLE IF EXISTS rules;
+CREATE TABLE rules (
+	N serial PRIMARY KEY,
+	A1S1 REAL,
+	A1S2 REAL,
+	A1S3 REAL,
+	A2S1 REAL,
+	A2S2 REAL,
+	A2S3 REAL,
+	A3S1 REAL,
+	A3S2 REAL,
+	A3S3 REAL,
+	A3S4 REAL
+);
+
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 2, NULL, NULL, 3, 33, NULL, 4, 44, NULL, NULL);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 2, 22, 12, 3, NULL, 13, 4, NULL, 14, NULL);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 2, NULL, 12, 3, 33, NULL, 4, 44, 14, NULL);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 2, 22, NULL, 3, NULL, 13, NULL, 44, 14, 18);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 2, 22, 12, 3, 33, 13, 4, 44, 14, 18);
+
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 11, 23, 13, 4, 20, 10, 3, 23, NULL, 20);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 4, NULL, 10, NULL, 19, NULL, NULL, 33, 23, 22);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 6, 18, NULL, 7, 30, NULL, 6, 35, 12, NULL);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( NULL, 20, 8, 7, NULL, 12, 7, NULL, 13, 13);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( NULL, NULL, 4, 8, NULL, 9, 6, 40, 9, 14);
+
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 4, 12, 12, 3, 33, 13, 4, 40, 14, NULL);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 4, 12, 12, NULL, 33, 13, 4, NULL, 14, 18);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 4, 12, 12, 3, 33, NULL, 4, 40, 14, 18);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( NULL, 12, 12, 3, NULL, 13, NULL, 40, 14, 18);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 4, 12, NULL, NULL, 33, 13, 4, 40, 14, 18);
+
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 2, 22, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( NULL, NULL, 12, 3, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( NULL, NULL, NULL, NULL, 33, 13, NULL, NULL, NULL, NULL);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( NULL, NULL, NULL, NULL, NULL, NULL, 4, 44, NULL, NULL);
+INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 14, 18);
+
+
+
 DO $$
 DECLARE
-   agrs JSON := '[
-		{
-			"agr": 1,
-			"sensors": [1,2,3]
-		},
-		{
-			"agr": 2,
-			"sensors": [4,5,6]
-		}
-		,
-		{
-			"agr": 3,
-			"sensors": [7,8,9,10]
-		}
-		
-	]';
-	join_sensors TEXT[];
-	join_table TEXT := '';
-	sample_table TEXT := 'sampled';
-	agr_sensor JSON;
-	agr_json JSON;
-	counter INTEGER;
-	counter2 INTEGER;
-	correlation_value REAL;
-	corr_threshold REAL := 0.2;
-	msg TEXT;
 	item RECORD;
-
+	anomaly REAL[] := ARRAY[
+		2,
+		22,
+		12,
+		3,
+		33,
+		13,
+		4,
+		44,
+		14,
+		18
+	];
+	sthreshold JSON := '[0.5,0.7,0.3]';
 BEGIN
-
-    call create_sensors(2, 2, 2, 2, 2);
-	call create_sensors(-, 22, -, 22, 22);
-	call create_sensors(-, 12, 12, -, 12);
-	call create_sensors(3, 3, 3, 3, 3);
-	call create_sensors(33, -, 33, -, 33);
-	call create_sensors(-, 13, -, 13, 13);
-	call create_sensors(4, -, 44, 44, 44);
-	call create_sensors(-, 14, 14, 14, 14);
-        call create_sensors(-, -, -, 18, 18);
+	RAISE NOTICE 'anomaly_cause: %', anomaly_cause('rules', anomaly) ;
+END ;
+$$

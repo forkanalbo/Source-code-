@@ -1,3 +1,6 @@
+
+
+/* (c) 2020 furqan albo jwaid  */
 /*---------------- Create table procedure ----------------*/
 DROP PROCEDURE IF EXISTS create_sensors(INT, INT, INT);
 CREATE PROCEDURE create_sensors(numAgr INT, numSensor INT, numRows INT)

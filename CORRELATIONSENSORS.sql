@@ -1,3 +1,5 @@
+/* (c) 2020 furqan albo jwaid  */
+
 CREATE FUNCTION correlation_threshold(correlation REAL, threshold REAL)
 RETURNS BOOLEAN
 AS $$

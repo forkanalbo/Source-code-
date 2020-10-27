@@ -1,3 +1,6 @@
+
+
+/* (c) 2020 furqan albo jwaid  */
 CREATE FUNCTION pearson_correlation(tname TEXT, field1 TEXT, field2 TEXT)
 RETURNS REAL
 AS $$
