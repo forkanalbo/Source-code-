@@ -1,65 +1,106 @@
-
-
-
 /* (c) 2020 furqan albo jwaid  */
-DROP TABLE IF EXISTS rules;
-CREATE TABLE rules (
-	N serial PRIMARY KEY,
-	A1S1 REAL,
-	A1S2 REAL,
-	A1S3 REAL,
-	A2S1 REAL,
-	A2S2 REAL,
-	A2S3 REAL,
-	A3S1 REAL,
-	A3S2 REAL,
-	A3S3 REAL,
-	A3S4 REAL
-);
 
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 2, NULL, NULL, 3, 33, NULL, 4, 44, NULL, NULL);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 2, 22, 12, 3, NULL, 13, 4, NULL, 14, NULL);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 2, NULL, 12, 3, 33, NULL, 4, 44, 14, NULL);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 2, 22, NULL, 3, NULL, 13, NULL, 44, 14, 18);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 2, 22, 12, 3, 33, 13, 4, 44, 14, 18);
-
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 11, 23, 13, 4, 20, 10, 3, 23, NULL, 20);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 4, NULL, 10, NULL, 19, NULL, NULL, 33, 23, 22);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 6, 18, NULL, 7, 30, NULL, 6, 35, 12, NULL);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( NULL, 20, 8, 7, NULL, 12, 7, NULL, 13, 13);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( NULL, NULL, 4, 8, NULL, 9, 6, 40, 9, 14);
-
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 4, 12, 12, 3, 33, 13, 4, 40, 14, NULL);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 4, 12, 12, NULL, 33, 13, 4, NULL, 14, 18);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 4, 12, 12, 3, 33, NULL, 4, 40, 14, 18);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( NULL, 12, 12, 3, NULL, 13, NULL, 40, 14, 18);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 4, 12, NULL, NULL, 33, 13, 4, 40, 14, 18);
-
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( 2, 22, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( NULL, NULL, 12, 3, NULL, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( NULL, NULL, NULL, NULL, 33, 13, NULL, NULL, NULL, NULL);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( NULL, NULL, NULL, NULL, NULL, NULL, 4, 44, NULL, NULL);
-INSERT INTO rules (A1S1, A1S2, A1S3, A2S1, A2S2, A2S3, A3S1, A3S2, A3S3,A3S4) VALUES ( NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 14, 18);
-
-
-
-DO $$
+/* Вычисление причины аномалии
+rules_table - имя таблицы правил
+anomaly - аномалия
+Возвращаемые значения:
+1 – Брак сырья, 2 – Неясно, 3 – Неисправные сенсоры */
+DROP FUNCTION IF EXISTS anomaly_cause(TEXT, REAL[]);
+CREATE FUNCTION anomaly_cause(rules_table TEXT, anomaly REAL[])
+RETURNS INTEGER
+AS $$
 DECLARE
-	item RECORD;
-	anomaly REAL[] := ARRAY[
-		2,
-		22,
-		12,
-		3,
-		33,
-		13,
-		4,
-		44,
-		14,
-		18
-	];
-	sthreshold JSON := '[0.5,0.7,0.3]';
+	maxSensors INTEGER;
+	maxRules INTEGER;
 BEGIN
-	RAISE NOTICE 'anomaly_cause: %', anomaly_cause('rules', anomaly) ;
+	EXECUTE format(E'select max(sim(\'%s\', rule_array)) as maxSensors from %s;', anomaly, rules_table) INTO maxSensors;	
+	IF maxSensors = array_upper(anomaly, 1) THEN
+		RETURN 1;
+	END IF;
+	EXECUTE format(E'select count(rule_array) from %s where sim(\'%s\', rule_array) = %s;', rules_table, anomaly, maxSensors) INTO maxRules;
+	IF maxSensors < array_upper(anomaly, 1) AND maxRules = 1 THEN
+		RETURN 3;
+	END IF;
+	
+	RETURN 2;
+	
 END ;
 $$
+LANGUAGE plpgsql;
+
+
+/* Список неисправных сенсоров
+rules_table - имя таблицы правил
+anomaly - аномалия
+*/
+DROP FUNCTION IF EXISTS faulty_sensors(TEXT, REAL[]);
+CREATE FUNCTION faulty_sensors(rules_table TEXT, anomaly REAL[])
+RETURNS INTEGER[]
+AS $$
+DECLARE
+	res INTEGER[];
+	maxSensors INTEGER;
+BEGIN
+	EXECUTE format(E'select max(sim(\'%s\', rule_array)) as maxSensors from %s;', anomaly, rules_table) INTO maxSensors;
+	
+	EXECUTE format(E'select array_positions(CoordDiff(\'%s\', rule_array), 0) from %s where sim(\'%s\', rule_array) = %s; ', anomaly, rules_table, anomaly,  maxSensors) INTO res;	
+	
+	
+	
+	RETURN res;
+	
+END ;
+$$
+LANGUAGE plpgsql;
+
+
+/* Количество совпадений показаний сенсоров в аномалии и правиле  
+anomaly - аномалия
+_rule - правило
+*/
+DROP FUNCTION IF EXISTS Sim( REAL[], REAL[]);
+CREATE FUNCTION Sim(anomaly REAL[], _rule REAL[])
+RETURNS INTEGER
+AS $$
+DECLARE
+	counter INTEGER := 0;
+	
+BEGIN
+FOR i IN array_lower(_rule, 1) .. array_upper(_rule, 1)
+LOOP
+  IF _rule[i] = anomaly[i] THEN
+  	counter := counter +1;
+  END IF;
+END LOOP;
+RETURN 	counter;
+END;
+$$
+LANGUAGE plpgsql;
+
+/* Проверка равенства координат аномалии и правила
+anomaly - аномалия
+_rule - правило
+Возвращаемое значение:
+Массив из результатов проверки равенства координат (1 – равны, 0 – не равны)
+*/
+DROP FUNCTION IF EXISTS CoordDiff(REAL[], REAL[]);
+CREATE FUNCTION CoordDiff(anomaly REAL[], _rule REAL[])
+RETURNS INTEGER[]
+AS $$
+DECLARE
+	res INTEGER[];	
+BEGIN
+FOR i IN array_lower(_rule, 1) .. array_upper(_rule, 1)
+LOOP
+  IF _rule[i] = anomaly[i] THEN
+  	res[i] = 1;
+  ELSE
+    res[i] = 0;
+  END IF;
+END LOOP;
+RETURN 	res;
+END;
+$$
+LANGUAGE plpgsql;
+
+
