@@ -1,6 +1,3 @@
-
-/* (c) 2020 furqan albo jwaid  */
-/* Вычисление таблицы с данными о корреляции сенсоров */
 DO $$
 DECLARE
    agrs JSON := '[
@@ -37,7 +34,7 @@ DECLARE
 
 BEGIN
 
-    call create_sensors(1, 5, 20);
+    	call create_sensors(1, 5, 20);
 	call create_sensors(2, 5, 20);
 	call create_sensors(3, 5, 20);
 	call create_sensors(4, 5, 20);

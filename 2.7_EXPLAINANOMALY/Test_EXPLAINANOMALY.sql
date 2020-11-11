@@ -1,6 +1,3 @@
-
-/* (c) 2020 furqan albo jwaid  */
-
 DROP TABLE IF EXISTS rules;
 CREATE TABLE rules (
 	N serial PRIMARY KEY,
