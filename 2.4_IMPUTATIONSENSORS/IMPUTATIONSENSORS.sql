@@ -1,3 +1,5 @@
+
+/* (c) 2020 furqan albo jwaid  */
 /* Создание таблицы показаний сенсоров с пропущенными значениями 
 numAgr - номер агрегата
 numSensor - количество сенсоров
@@ -107,7 +109,7 @@ DECLARE
 	b REAL;
 BEGIN
 	tbl_without_null := tbl || '_without_null';
-	EXECUTE format('CREATE TEMP TABLE %s as  select sensors from %s where sensors_without_null(sensors);', tbl_without_null, tbl);
+	EXECUTE format('DROP TABLE IF EXISTS %s; CREATE TEMP TABLE %s as  select sensors from %s where sensors_without_null(sensors);', tbl_without_null, tbl_without_null, tbl);
 	EXECUTE format('SELECT count(*) FROM  %s;', tbl_without_null) INTO pointNumber;
 	
 	IF pointNumber < clNumber THEN
@@ -140,7 +142,7 @@ BEGIN
 		/* Вычисляем матрицу вероятностей */
 		FOR i IN 1..pointNumber LOOP
 			FOR j IN 1..clNumber LOOP
-				a := point_dist(get_matrix_row(cx, i), get_matrix_row(res, j)) ^ (2/(1-m)));
+				a := point_dist(get_matrix_row(cx, i), get_matrix_row(res, j)) ^ (2/(1-m));
 				b  := 0;
 				FOR k IN 1..clNumber LOOP
 					b := b + point_dist(get_matrix_row(cx, i), get_matrix_row(res, k)) ^ (2/(1-m));
@@ -216,7 +218,7 @@ BEGIN
 				tprop := prop;
 			ELSE
 				LOOP
-					tprop := random() / (clNumber /3) * prop;
+					tprop := random() / clNumber * prop;
 					IF tprop != 0 AND tprop != 1 THEN
 						EXIT;
 					END IF;
@@ -328,6 +330,117 @@ BEGIN
 END ;
 $$
 LANGUAGE plpgsql ;
+
+
+/* Загрузка таблицы показаний сенсоров из файла
+numAgr - номер агрегата
+dataFile - файл с данными
+*/
+DROP PROCEDURE IF EXISTS load_sensors(INT, TEXT);
+CREATE PROCEDURE load_sensors(numAgr INT, dataFile TEXT)
+AS $$
+DECLARE
+	create_query TEXT := '';
+BEGIN
+		create_query := format('DROP TABLE IF EXISTS A%s;CREATE TABLE A%s ( N serial PRIMARY KEY, sensors REAL[]);', numAgr, numAgr);
+		EXECUTE create_query;
+		
+		create_query := format('COPY A%s FROM ''%s'' DELIMITER '','' CSV HEADER;', numAgr, dataFile);
+		EXECUTE create_query;
+
+END ;
+$$
+LANGUAGE plpgsql ;
+
+/* Загрузка таблицы показаний сенсоров из файла
+numAgr - номер агрегата
+dataFile - файл с данными
+*/
+DROP PROCEDURE IF EXISTS load_sensors(INT, TEXT);
+CREATE PROCEDURE load_sensors(numAgr INT, dataFile TEXT)
+AS $$
+DECLARE
+	create_query TEXT := '';
+BEGIN
+		create_query := format('DROP TABLE IF EXISTS A%s;CREATE TABLE A%s ( N serial PRIMARY KEY, sensors REAL[]);', numAgr, numAgr);
+		EXECUTE create_query;
+		
+		create_query := format('COPY A%s FROM ''%s'' DELIMITER '','' CSV HEADER;', numAgr, dataFile);
+		EXECUTE create_query;
+
+END ;
+$$
+LANGUAGE plpgsql ;
+
+/*Добавление значений NULL в таблице данных сенсоров
+numAgr  - номер агрегата
+nullNum - количество значений NULL
+
+Возвращаемое значение: Массив координат значений сенсоров замененных на NULL
+null_coordinates: {{62,7},{8,1},{132,9},{169,9},{31,10},{140,14},{42,13},{94,10},{34,1},{120,8}}
+{номер строки таблицы, номер сенсора}
+*/
+DROP FUNCTION IF EXISTS add_nulls_to_sensors(INT,INT);
+CREATE FUNCTION add_nulls_to_sensors(numAgr INT, nullNum INT)
+RETURNS REAL[][]
+AS $$
+DECLARE
+	data_count INT := 0;
+	sensor_count INT := 0;
+	query_string TEXT := '';
+	null_coordinates INT[][]; 
+	tINT INT;
+BEGIN
+	query_string:= format('SELECT COUNT(n) FROM A%s;', numAgr);
+	EXECUTE query_string INTO data_count;
+	query_string:= format('SELECT array_upper(sensors, 1) FROM A%s;', numAgr);
+	EXECUTE query_string INTO sensor_count;
+	
+	SELECT array_fill(0, ARRAY[nullNum,2]) INTO null_coordinates;
+	
+	FOR i IN 1..nullNum LOOP
+		SELECT floor(random() * data_count + 1)::int INTO tINT; 
+		null_coordinates[i][1] := tINT;
+		SELECT floor(random() * sensor_count + 1)::int INTO tINT;
+		null_coordinates[i][2] := tINT;
+		
+		query_string:= format('UPDATE A%s SET sensors[%s] = NULL WHERE n = %s;', numAgr, null_coordinates[i][2], null_coordinates[i][1]);
+		EXECUTE query_string;
+	END LOOP;
+	RETURN null_coordinates;
+END ;
+$$
+LANGUAGE plpgsql;
+
+
+/*Вычисление MAPE(mean absolute percentage error)
+tbl_complete  - имя таблицы с точными данными сенсоров
+tbl_nulls - имя таблицы с вычисленными значениями 
+null_coordinates - координаты значений сенсоров в таблице, которые были вычислены
+
+Возвращаемое значение: значение MAPE
+*/
+DROP FUNCTION IF EXISTS get_MAPE(TEXT,TEXT,INT[][]);
+CREATE FUNCTION get_MAPE(tbl_complete TEXT, tbl_nulls TEXT,null_coordinates INT[][])
+RETURNS REAL
+AS $$
+DECLARE
+	res REAL := 0;
+	tREAL1 REAL;
+	tREAL2 REAL;
+	nulls_count INT;
+	query_string TEXT := 'SELECT sensors[%s] FROM %s WHERE n = %s;';
+BEGIN	
+	SELECT array_upper(null_coordinates, 1) INTO nulls_count;
+	FOR i IN 1..nulls_count LOOP
+		EXECUTE format(query_string, null_coordinates[i][2], tbl_complete, null_coordinates[i][1])INTO tREAL1;
+		EXECUTE format(query_string, null_coordinates[i][2], tbl_nulls, null_coordinates[i][1])INTO tREAL2;
+		res := res + abs(tREAL1 - tREAL2)/tREAL1;
+	END LOOP;
+	RETURN res * 100 / nulls_count;
+END ;
+$$
+LANGUAGE plpgsql;
 
 
 

@@ -1,3 +1,5 @@
+/* (c) 2020 furqan albo jwaid  */
+
 DO $$
 DECLARE
 	centroids REAL[][];
